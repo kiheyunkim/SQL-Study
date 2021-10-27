@@ -57,3 +57,29 @@ show character set; #지원하는 캐릭터 셋 확인
 ```
 maxlen이 1보다 크면 multibyte character set이라는 의미.
 
+```sql
+#테이블 열 정의시 기본 캐릭터 셋이 아닌 캐릭터 셋을 지정하기 위한 방법
+#mysql8부터는 utf8mb4가 기본임.
+varchar(2) character set latin1
+#데이터베이스 단위로 캐릭터 셋을 지정
+create database database_name character set latin1;
+```
+
+### 텍스트 데이터
+* 텍스트 데이터 종류
+  * tinytext: 최대 255바이트
+  * text: 최대 65,535바이트
+  * mediumtext: 최대 16,777,215바이트
+  * longtext: 최대 4,294,967,295바이트
+
+* 텍스트 데이터 고를 시 고려사항
+  * 텍스트 열에 로드되는 데이터가 해당 유형의 최대 크기를 초과하면 데이터가 잘림
+  * 데이터를 열에 로드되면 후행 공백이 제거되지 않음.
+  * 정렬 또는 그룹화에 text열을 사용한 경우, 필요하면 한도를 늘릴 수 있지만 처음에는 1,024바이트만 사용됨
+  * text를 제외한 텍스트 자료형은 MySQL의 고유한 자료형(DB2와 오라클은 큰 문자 오브젝트에 clob이라는 자료형을 사용함)
+  * MySQL은 이제 varchar 열에서 최대 65,535바이트를 허용하므로(버전 4에서는 255바이트로 제한) tinytext나 text자료형을 사용할 필요가 없음
+
+* 오라클 데이터 베이스의 텍스트 데이터
+  * char : 최대 2,000바이트 
+  * varchar2: 최대 4,000바이트 허용
+  * clob: 그보다 더 큰 문서의 경우
