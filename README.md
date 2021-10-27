@@ -290,12 +290,12 @@ CREATE TABLE person
 
 ```sql
 # favorite_food 테이블
-CREATE TABLE favorite
+CREATE TABLE favorite_food
 (person_id SMALLINT UNSIGNED,
  food VARCHAR(20),
  CONSTRAINT pk_favorite_food PRIMARY KEY (person_id, food),# 한 사람이 좋아하는게 2개 이상일 수 있으니 고유성을 보장하기 위함
- CONSTRAINT fk_fav_person_id FOREIGN KEY (person_id),# person_id는 person테이블에 있는 것만을 사용하도록 제한
- REFERENCE person (person_id)
+ CONSTRAINT fk_fav_person_id FOREIGN KEY (person_id) # person_id는 person테이블에 있는 것만을 사용하도록 제한
+ REFERENCES person (person_id)
 );
 ```
 
@@ -361,5 +361,112 @@ INSERT INTO favorite_food (person_id, food) VALUES (1, 'nachos');
 
 
 
+##### XML데이터로 가져오는방법
+
+```bash
+mysql -u root -p --xml # 왼쪽과 같이 접속하면 모든 것들이 xml로 출력됨
+```
+
+```sql
+#아래의 경우도 된다고 하지만 mariadb에서는 안됨
+SELECT * FROM table_name FOR XML AUTO, ELEMENTS
+```
 
 
+
+##### 데이터 수정
+
+```sql
+UPDATE person
+	SET street = '1225 Tremont st.',
+	city = 'Boston',
+	state = 'MA',
+	country = 'USA',
+	postal_code = '02138'
+WHERE person_id = 1;
+```
+
+
+
+##### 데이터 삭제
+
+```sql
+DELETE FROM person WHERE person_id = 1
+```
+
+
+
+### 좋은 구문을 망치는 경우
+
+#### 고유하지 않은 키본키
+
+테이블 정의에는 기본 키 제약조건 생성이 포함되므로 MySQL은 중복 키 값을 테이블에 삽입하지 않도록 함.
+
+```sql
+INSERT INTO person
+	(person_id, fname, lname, eye_color, birth_date)
+	VALUES (1, 'Charles', 'Fulton', 'GR', '1968-01-15');
+```
+
+```bash
+ERROR 1062 (23000): Duplicate entry '1' for key 'PRIMARY'
+```
+
+
+
+#### 존재하지 않는 외래 키
+
+favorite_food 테이블에 입력된 person_id의 모든 값이 person 테이블에 존재함을 보증함. 이를 위반하는 행을 만들려 할때 일어나는 현상
+
+```sql
+INSERT INTO favorite_food (person_id, food)
+	VALUES (999, 'lasagna');
+```
+
+```bash
+ERROR 1452 (23000): Cannot add or update a child row: a foreign key constraint fails (`sakila`.`favorite_food`, CONSTRAINT `fk_fav_person_id` FOREIGN KEY (`person_id`) REFERENCES `person` (`person_id`))
+```
+
+
+
+#### 열 값 위반
+
+enum값에 위반된 값을 넣는경우, 일어나는 현상
+
+```sql
+UPDATE person
+	SET eye_color = 'ZZ'
+	WHERE person_id = 1;
+```
+
+```bash
+ERROR 1265 (01000): Data truncated for column 'eye_color' at row 1
+```
+
+
+
+#### 잘못된 날짜 변환
+
+date 열을 채울 문자열을 구성할 때 문자열 예상 형식과 일치하지 않을 경우 일어나는 현상
+
+```sql
+UPDATE person
+	SET birth_date = 'DEC-21-1980'
+	WHERE person_id = 1;
+```
+
+```bash
+ERROR 1292 (22007): Incorrect date value: 'DEC-21-1980' for column `sakila`.`person`.`birth_date` at row 1
+```
+
+
+
+```sql
+UPDATE person
+	SET birth_date = str_to_date('DEC-21-1980', '%b-%d-%Y')
+	WHERE person_id = 1;
+```
+
+```bash
+Query OK, 1 row affected (0.002 sec)
+```
