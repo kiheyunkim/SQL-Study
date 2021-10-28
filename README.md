@@ -470,3 +470,251 @@ UPDATE person
 ```bash
 Query OK, 1 row affected (0.002 sec)
 ```
+
+
+## 쿼리 입문
+
+
+
+### 쿼리 역학
+
+```bash
+Welcome to the MariaDB monitor.  Commands end with ; or \g.
+Your MariaDB connection id is 15
+Server version: 10.6.4-MariaDB-1:10.6.4+maria~focal mariadb.org binary distribution
+
+Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+MariaDB [(none)]> 
+```
+
+접속하면 처음 나오는 메세지. **연결 id는 15임**. 쿼리가 잘못되서 오래 실행되는 경우 오류 발생시 추적에 좋음.
+
+
+
+* 서버는 쿼리가 서버로 전송될때 마다 다음 항들을 확인함.
+  * 이 구문을 실행할 권한이 있는지?
+  * 원하는 데이터에 엑세스 할 수 있는 권한이 있는지?
+  * 문법이 정확한지?
+
+> > 위의 3가지 단계가 끝나면 쿼리는 쿼리 실행시 가장 효율적인 방법을 결정하는 **쿼리 옵티마이저(query optimizer)**로 전달됨 => 옵티마이저는 from 절에 명명된 테이블에 조인할 순서 및 사용 가능한 인덱스를 확인한 다음, 서버가 쿼리 실행에 필요한 **실행계획(execution plan)**을 선택
+>
+> 
+>
+> > 서버가 쿼리 실행을 마치면 결과셋을 반환함. 결과가 없으면 Empty Set을 반환
+
+
+
+### 쿼리 절
+
+select문은 구성요소(component)와 절(clause)로 구성됨.
+
+| 절 이름  |                          목적                           |
+| :------: | :-----------------------------------------------------: |
+|  select  |             쿼리 결과에 포함할 열을 결정함.             |
+|   from   | 데이터를 검색할 테이블과, 테이블을 조인하는 방법을 식별 |
+|  where   |                불필요한 데이터를 걸러냄                 |
+| group by |           공통 열 값을 기준으로 행을 그룹화함           |
+|  having  |                 불필요한 그룹을 걸러냄                  |
+| order by |     하나 이상의 열을 기준으로 최종 결과 행을 정렬함     |
+
+**위 6개 모든 절은 ANSI스펙에 포함됨**
+
+
+
+#### Select절
+
+**'*'(asterisk)** 모든열이 결과에 포함되어야 함을 의미
+
+##### 직접 열의 이름을 지정해주면 해당 열들을 출력해줌
+
+```sql
+MariaDB [sakila]> select * from language;
++-------------+----------+---------------------+
+| language_id | name     | last_update         |
++-------------+----------+---------------------+
+|           1 | English  | 2006-02-15 05:02:19 |
+|           2 | Italian  | 2006-02-15 05:02:19 |
+|           3 | Japanese | 2006-02-15 05:02:19 |
+|           4 | Mandarin | 2006-02-15 05:02:19 |
+|           5 | French   | 2006-02-15 05:02:19 |
+|           6 | German   | 2006-02-15 05:02:19 |
++-------------+----------+---------------------+
+```
+
+
+
+##### 열을 지정한 경우
+
+```sql
+MariaDB [sakila]> select name from language;
++----------+
+| name     |
++----------+
+| English  |
+| Italian  |
+| Japanese |
+| Mandarin |
+| French   |
+| German   |
++----------+
+```
+
+
+
+##### select에 다음 항목들도 추가할 수 있음
+
+* 숫자 또는 문자열과 같은 리터럴
+* transaction.amount * -1과 같은 표현식
+* ROUND(transaction.amount, 2)와 같은 내장 함수 호출
+* 사용자 정의 함수 호출
+
+```sql
+SELECT language_id, 'COMMON' language_usage, language_id * 3.1415927 lang_pi_value, upper(name) language_name FROM language;
++-------------+----------------+---------------+---------------+
+| language_id | language_usage | lang_pi_value | language_name |
++-------------+----------------+---------------+---------------+
+|           1 | COMMON         |     3.1415927 | ENGLISH       |
+|           2 | COMMON         |     6.2831854 | ITALIAN       |
+|           3 | COMMON         |     9.4247781 | JAPANESE      |
+|           4 | COMMON         |    12.5663708 | MANDARIN      |
+|           5 | COMMON         |    15.7079635 | FRENCH        |
+|           6 | COMMON         |    18.8495562 | GERMAN        |
++-------------+----------------+---------------+---------------+
+```
+
+
+
+##### 열의 별칭
+
+쿼리에서 반환한 열에 대한 레이블을 생성하지만 직접 고유한 테이블을 지정할 수 있음.
+
+```sql
+SELECT language_id, 'COMMON' language_usage #language_usage로 별칭을 정함
+SELECT language_id, 'COMMON' AS language_usage #위와 동일 / 명시적으로 표현
+```
+
+
+
+#### 중복 제거
+
+```sql
+MariaDB [sakila]> SELECT actor_id FROM film_actor ORDER BY actor_id;
++----------+
+| actor_id |
++----------+
+|        1 |
+|        1 |
+|        1 |
+|        1 |
+|        1 |
+|        1 |
+|        1 |
+|        1 |
+.....
+|      200 |
+|      200 |
+|      200 |
+|      200 |
+|      200 |
++----------+
+5462 rows in set (0.006 sec)
+```
+
+
+
+##### distinct키워드를 사용하면 중복을 제거할 수 있음.
+
+```sql
+MariaDB [sakila]> SELECT DISTINCT actor_id FROM film_actor ORDER BY actor_id;
++----------+
+| actor_id |
++----------+
+|        1 |
+|        2 |
+|        3 |
+|        4 |
+|        5 |
+|        6 |
+|        7 |
+|        8 |
+|        9 |
+|       10 |
+|       11 |
+|       12 |
+|       13 |
+...
+|      195 |
+|      196 |
+|      197 |
+|      198 |
+|      199 |
+|      200 |
++----------+
+200 rows in set (0.004 sec)
+```
+
+**중복 값이 없는 것이 확실할 때는 all키워드를 지정할 수 있음. 그러나 all은 기본값이고 생략하는게 일반적**
+
+
+
+### FROM절
+
+* from절은 하나이상의 테이블 목록
+* from절은 쿼리에 사용되는 테이블을 명시할 뿐만 아니라, 테이블을 서로 연결하는 수단도 함께 정의.
+
+
+
+#### 테이블 유형
+
+* 영구 테이블(permanent table): create table문으로 생성
+* 파생테이블(derived table): 하위 쿼리에서 반환하고 메모리에 보관된 행
+* 임시 테이블(temporary table): 메모리에 저장된 휘발성 데이터
+* 가상 테이블(virtual table): create view 문으로 생성
+
+
+
+##### 파생 테이블
+
+서브쿼리(subQuery)는 다은 쿼리에 포함된 쿼리. 괄호로 묶여 있으며 select문의 여러부분에서 찾을 수 있음.
+
+from절 내에서의 서브쿼리는 from 절에 명시된 다른 테이블과 상호작용할 수 있는 파생 테이블을 생성하는 역할을 함.
+
+```sql
+SELECT concat(cust.last_name,',',cust.first_name) fullname FROM (SELECT first_name, last_name, email FROM customer WHERE first_name = 'JESSIE') cust;
++--------------+
+| fullname     |
++--------------+
+| BANKS,JESSIE |
+| MILAM,JESSIE |
++--------------+
+2 rows in set (0.002 sec)
+```
+
+
+
+##### 임시 테이블
+
+임시 테이블은 트랜재션이 끝날 때 또는 데이터베이스 세션이 닫힐 때 사라짐
+
+```sql
+CREATE TEMPORARY TABLE actors_j(actor_id smallint(5), first_name varchar(45), last_name varchar(45));
+
+INSERT INTO actors_j SELECT actor_id, first_name, last_name FROM actor WHERE last_name LIKE 'J%';
+
+SELECT * FROM actors_j;
+```
+
+
+
+##### 가상 테이블(뷰)
+
+뷰는 데이터 딕셔너리에 저장된 쿼리.
+
+
+
+
+
+
