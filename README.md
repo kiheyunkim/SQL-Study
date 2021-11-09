@@ -12,3 +12,5 @@
 
 [05. 집합 연산자](./contents/05.mysql_set_operator.md)
 
+[06.데이터 생성 조작 변환](./contents/06.mysql_data_manipulation.md)
+
