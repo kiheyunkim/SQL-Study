@@ -15,3 +15,5 @@
 [06.데이터 생성 조작 변환](./contents/06.mysql_data_manipulation.md)
 
 [07.그룹화와 집계](./contents/07.mysql_grouping_and_aggregation.md)
+
+[08.서브 쿼리](./contents/08.mysql_subquery.md)
