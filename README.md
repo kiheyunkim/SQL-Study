@@ -1,5 +1,7 @@
 # SQL-Study
 
+이 Study는 MySQL의 예시 데이터 sakila를 사용함
+[링크](https://dev.mysql.com/doc/index-other.html)
 
 
 [01. mysql 명령줄 도구 사용 방법](./contents/01.mysql_command.md)
@@ -17,3 +19,5 @@
 [07.그룹화와 집계](./contents/07.mysql_grouping_and_aggregation.md)
 
 [08.서브 쿼리](./contents/08.mysql_subquery.md)
+
+[09.조인 심화](./contents/09.mysql_join.md)
