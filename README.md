@@ -25,3 +25,5 @@
 [10.조건식](./contents/10.mysql_conditional_expression.md)
 
 [11.트랜잭션](./contents/11.mysql_transaction.md)
+
+[12.인덱스와 제약조건](./contents/12.mysql_index_and_constraint.md)
