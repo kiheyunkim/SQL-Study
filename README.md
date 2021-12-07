@@ -29,3 +29,5 @@
 [12.인덱스와 제약조건](./contents/12.mysql_index_and_constraint.md)
 
 [13.뷰](./contents/13.mysql_view.md)
+
+[14.메타데이터](./contents/14.mysql_metadata.md)
