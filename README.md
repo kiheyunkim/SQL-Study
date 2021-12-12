@@ -3,6 +3,7 @@
 이 Study는 MySQL의 예시 데이터 sakila를 사용함
 [링크](https://dev.mysql.com/doc/index-other.html)
 
+[사용 책](http://www.kyobobook.co.kr/product/detailViewKor.laf?ejkGb=KOR&mallGb=KOR&barcode=9791162244074&orderClick=LEa&Kc=)
 
 [01. mysql 명령줄 도구 사용 방법](./contents/01.mysql_command.md)
 
